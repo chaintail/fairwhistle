@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FairWhistle — match-integrity surveillance agent</title>
+<meta name="description" content="Autonomous agent watching odds microstructure for patterns consistent with fixing or informed money. Timestamped, signed, attested alerts." />
+<link rel="stylesheet" href="/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>" />
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">
+      <h1><span class="whistle">Fair</span>Whistle</h1>
+      <span class="tag">match-integrity surveillance agent</span>
+    </div>
+    <div class="badges">
+      <span class="badge"><span class="dot pulse"></span> AGENT LIVE · autonomous</span>
+      <span class="badge synthetic" title="Deterministic replayed tape with 3 planted, openly-labeled anomalies. No live TxODDS data in this demo.">⚠ SYNTHETIC FIXTURE</span>
+      <span class="badge" id="badge-cycle">cycle —</span>
+      <span class="badge" title="Agent Ed25519 public key — verifies every alert signature">🔑 <code id="pubkey">—</code></span>
+    </div>
+  </header>
+
+  <section class="scoreboard" aria-label="match state">
+    <div class="minute" id="minute">0'</div>
+    <div class="score">
+      <span id="home-name">FC Meridian</span>
+      <span class="num" id="score">0 – 0</span>
+      <span id="away-name">Atlético Solara</span>
+    </div>
+    <div class="eventlog" id="eventlog"></div>
+    <div class="sb-meta sb-right">
+      <span id="replay-pos">replay t=0/600 · 10-min loop</span>
+      <span id="next-window"></span>
+    </div>
+  </section>
+
+  <div class="cols">
+    <section class="panel" aria-label="odds microstructure">
+      <h2>Odds microstructure — 4 books, live replay</h2>
+      <p class="sub">Decimal odds per book. Dashed verticals = public match events (repricing on public news is <em>not</em> suspicious — the agent hunts moves public information can’t explain). ⚠ marks = integrity alerts.</p>
+      <div class="legend" id="legend"></div>
+      <div class="chart-block" id="chart-h"></div>
+      <div class="chart-block" id="chart-a"></div>
+      <div class="chart-block" id="chart-o"></div>
+    </section>
+
+    <section class="panel" aria-label="integrity alerts">
+      <h2>Attested integrity alerts</h2>
+      <p class="sub">Detected autonomously · hashed · Ed25519-signed each cycle · fingerprint anchored on Solana devnet.</p>
+      <div id="alerts"><div class="alerts-empty">Surveillance running — no anomalies detected yet this cycle. The tape replays every 10 minutes; planted scenarios are disclosed below.</div></div>
+    </section>
+  </div>
+
+  <section class="strip" aria-label="detection rules">
+    <div class="panel rule-card">
+      <h3>1 · Velocity <span style="color:var(--ink-3)">(informed drift)</span></h3>
+      <p>20s log-return vs trailing 120s baseline volatility (event windows excluded). Fires at <code>|z| ≥ 5</code> sustained 3s outside public-event windows — price moving on information the market doesn’t have yet.</p>
+    </div>
+    <div class="panel rule-card">
+      <h3>2 · Cross-market coordination</h3>
+      <p>≥5 abnormal book/outcome pairs (<code>|z| ≥ 4</code>) across ≥3 books and ≥2 markets inside one 8s bucket, with no match event — money landing everywhere at once.</p>
+    </div>
+    <div class="panel rule-card">
+      <h3>3 · Stale-then-snap</h3>
+      <p>A book freezes its whole board ≥25s while consensus drifts ≥1.5%, then reprices ≥2.5% in a single tick — liquidity pulled while holding exposure.</p>
+    </div>
+  </section>
+
+  <details class="honesty">
+    <summary>⚠ What is synthetic here — full disclosure</summary>
+    <div class="honesty-body">
+      <p id="synthetic-note">—</p>
+      <p><strong>The detectors don’t cheat:</strong> they read only the odds stream — the scenario metadata below is never passed to them. The same code paths run unchanged on a live TxLINE feed via the <code>FeedAdapter</code> seam (<code>src/feed.ts</code>).</p>
+      <ul id="scenario-list"></ul>
+      <p><strong>Attestation, honestly labeled:</strong> alert <em>fingerprints</em> (cycle-invariant detection cores) are anchored on Solana <strong>devnet</strong>; each cycle’s live detection is Ed25519-signed by the agent key at detection time. Signature verification runs in your browser.</p>
+    </div>
+  </details>
+
+  <footer class="colophon">
+    Machine feeds: <a href="/api/alerts">/api/alerts</a> (attested JSON) · <a href="/api/feed">/api/feed</a> (SSE push) · <a href="/api/meta">/api/meta</a> (agent identity &amp; rule params) —
+    fixture <code id="fixture-id">—</code> · built for the TxODDS World Cup hackathon.
+  </footer>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+<script src="/app.js"></script>
+</body>
+</html>

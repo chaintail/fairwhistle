@@ -1,0 +1,20 @@
+{
+  "name": "fairwhistle",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Match-integrity surveillance agent: watches odds microstructure for patterns consistent with fixing or informed money, and publishes timestamped, attested alerts.",
+  "scripts": {
+    "test:cycle": "tsx scripts/test-cycle.ts",
+    "gen:key": "tsx scripts/gen-key.ts",
+    "anchor:devnet": "tsx scripts/anchor-devnet.ts",
+    "dev": "vercel dev --listen $(port-for fairwhistle 2>/dev/null || echo 3000)"
+  },
+  "devDependencies": {
+    "@solana/web3.js": "^1.95.0",
+    "@types/node": "^22.0.0",
+    "@vercel/node": "^5.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

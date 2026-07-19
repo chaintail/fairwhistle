@@ -1,0 +1,29 @@
+[
+  {
+    "coreHash": "b8fcc890b3f41cb2dc136cf20d217d01fff454821cb85d626fb3e66112056809",
+    "status": "anchored",
+    "cluster": "devnet",
+    "txSignature": "3ABqCqerfFzLv9NUK4N2CAXfQkwVAqQDDBBH8MjuB2Gg6RefVZczgedijEA6Rf6pdh5Z3z1VXdq8ZnvszVFt8RvX",
+    "explorerUrl": "https://explorer.solana.com/tx/3ABqCqerfFzLv9NUK4N2CAXfQkwVAqQDDBBH8MjuB2Gg6RefVZczgedijEA6Rf6pdh5Z3z1VXdq8ZnvszVFt8RvX?cluster=devnet",
+    "anchoredAt": "2026-07-19T07:56:28.817Z",
+    "memo": "fairwhistle:v1:7c77e6c0ebf54071:velocity:b8fcc890b3f41cb2dc136cf20d217d01fff454821cb85d626fb3e66112056809"
+  },
+  {
+    "coreHash": "ebdefbc1f70d84e25cdc6cfec661cc7d61b943406086691d521f4d0e5decc068",
+    "status": "anchored",
+    "cluster": "devnet",
+    "txSignature": "4NxWSDDDTF2FG4yH51dyT3oKzULKttjJthqayZwi3TvTQ9TBMqLe7NYgDz8qm9yqtr8pL3KzvZbCQaiAnQzbkS91",
+    "explorerUrl": "https://explorer.solana.com/tx/4NxWSDDDTF2FG4yH51dyT3oKzULKttjJthqayZwi3TvTQ9TBMqLe7NYgDz8qm9yqtr8pL3KzvZbCQaiAnQzbkS91?cluster=devnet",
+    "anchoredAt": "2026-07-19T07:56:29.306Z",
+    "memo": "fairwhistle:v1:7c77e6c0ebf54071:cross_market:ebdefbc1f70d84e25cdc6cfec661cc7d61b943406086691d521f4d0e5decc068"
+  },
+  {
+    "coreHash": "a3afb19d79839457ce13b96adc7fc453e48c566b1a6b9b1d2ca6a7f4ad959ffd",
+    "status": "anchored",
+    "cluster": "devnet",
+    "txSignature": "3fQNDVxX1oc6BVUV79br2WTWRVAoLVnJnBy3oJqsL4pfeonA541iFNHYDKUAGS1c9TyRqRtjkL9TGXhiD6CihYtn",
+    "explorerUrl": "https://explorer.solana.com/tx/3fQNDVxX1oc6BVUV79br2WTWRVAoLVnJnBy3oJqsL4pfeonA541iFNHYDKUAGS1c9TyRqRtjkL9TGXhiD6CihYtn?cluster=devnet",
+    "anchoredAt": "2026-07-19T07:56:30.086Z",
+    "memo": "fairwhistle:v1:7c77e6c0ebf54071:stale_snap:a3afb19d79839457ce13b96adc7fc453e48c566b1a6b9b1d2ca6a7f4ad959ffd"
+  }
+]
