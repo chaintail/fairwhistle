@@ -80,9 +80,11 @@ src/
   clock.ts      wall-clock-keyed replay position
   state.ts      agent state assembly + per-cycle signing + anchor join
 api/            Vercel functions: state, alerts, feed (SSE), verify, meta
-public/         dashboard (vanilla JS + SVG, zero frontend deps)
+public/         dashboard (vanilla JS + SVG, zero frontend deps), docs.html, llms.txt
 scripts/        gen-key, anchor-devnet, test-cycle, dev-server
 data/anchors.json  devnet anchor records (real tx signatures)
+mcp/            stdio MCP server (server.mjs) wrapping the read API for agents
+skills/         fairwhistle-integrity/SKILL.md — how an agent uses the MCP tools
 ```
 
 ## Run it
@@ -108,6 +110,55 @@ and says so in the UI — it never fakes a signature.
 | `GET /api/feed` | SSE push stream (snapshot + live alert events) |
 | `GET /api/meta` | agent identity, fixture id, detector params, fingerprints |
 | `POST /api/verify` | server-side signature verification fallback |
+
+## For agents
+
+FairWhistle ships a thin stdio **MCP server** (`mcp/server.mjs`, using the
+official `@modelcontextprotocol/sdk`) that wraps the read API below as four
+tools — no new detection or attestation logic, just `fetch()` + a light,
+honestly-labeled reshape:
+
+```
+list_active_alerts({ source, severity?, includeEvidence? })   # full alert sweep
+get_market_status({ source })                                 # replay cycle/minute/score, or live feed/kickoff state
+check_market_integrity({ market, source })                    # the pre-trade check: clean | flagged
+verify_alert_signature({ source, alertId?, instance?, signature? })  # confirm an alert's Ed25519 signature
+```
+
+`source` is `replay` (default, a labeled synthetic fixture) or `live` (the
+real TxLINE feed, ~60s upstream delay; returns an honest `available: false`
+if the deployment has no `TXLINE_API_TOKEN` configured — expected, not a
+bug).
+
+```bash
+git clone https://github.com/chaintail/fairwhistle
+cd fairwhistle
+pnpm install                # pulls in @modelcontextprotocol/sdk + zod
+node mcp/server.mjs         # stdio MCP server; talks to fairwhistle.vercel.app
+```
+
+**Claude Code plugin:** this repo doubles as the plugin root —
+`.claude-plugin/plugin.json` + `.mcp.json` wire the `fairwhistle` MCP server
+to `node ${CLAUDE_PLUGIN_ROOT}/mcp/server.mjs`, and
+`skills/fairwhistle-integrity/SKILL.md` documents tool usage, when to reach
+for it as a pre-trade risk check, honest replay/live caveats, and a
+described (prose-only, not implemented) pattern for polling live
+surveillance during a trade window.
+
+**Codex compatibility:** Codex works with the same stdio server via its
+`mcp_servers` config (`~/.codex/config.toml`):
+
+```toml
+[mcp_servers.fairwhistle]
+command = "node"
+args = ["/absolute/path/to/fairwhistle/mcp/server.mjs"]
+
+[mcp_servers.fairwhistle.env]
+FAIRWHISTLE_BASE_URL = "https://fairwhistle.vercel.app"
+```
+
+Full agent-facing docs (tool list, curl examples, install steps):
+https://fairwhistle.vercel.app/docs.html and `/llms.txt`.
 
 ## Verifying an alert yourself
 
