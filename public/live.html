@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FairWhistle LIVE — World Cup Final surveillance</title>
+<meta name="description" content="FairWhistle watching the real World Cup Final odds feed live — TxLINE mainnet consensus, integrity rules armed." />
+<link rel="stylesheet" href="/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>" />
+<style>
+  .badge.live-real { border-color: var(--good); color: var(--good); font-weight: 600; }
+  .kick { font-size: 15px; color: var(--ink-2); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">
+      <h1><span class="whistle">Fair</span>Whistle <span style="color:var(--good);font-size:20px">LIVE</span></h1>
+      <span class="tag">real-match surveillance · World Cup Final</span>
+    </div>
+    <div class="badges">
+      <span class="badge live-real"><span class="dot pulse"></span> REAL DATA — TxLINE mainnet</span>
+      <span class="badge" id="badge-state">state: —</span>
+      <span class="badge" title="Agent Ed25519 public key">🔑 <code id="pubkey">—</code></span>
+      <span class="badge"><a href="/">↩ recorded-fixture demo</a></span>
+    </div>
+  </header>
+
+  <section class="scoreboard" aria-label="fixture">
+    <div class="score"><span id="fixture-label">—</span></div>
+    <div class="sb-meta"><span class="kick" id="kickoff">—</span><span id="last-event" style="color:var(--ink-3)"></span></div>
+    <div class="sb-meta sb-right">
+      <span id="feed-status">feed: connecting…</span>
+      <span>consensus book · ~60s batch delay · free tier</span>
+    </div>
+  </section>
+
+  <div class="cols">
+    <section class="panel" aria-label="live odds">
+      <h2>Live consensus odds — TXLineStablePriceDemargined</h2>
+      <p class="sub">Stepped lines = real feed updates (odds hold until repriced). Dashed verticals = feed events / public-news repricing signatures — suppressed, never alerted. Range: <button class="act" id="rng-6" style="padding:2px 8px">6h</button> <button class="act" id="rng-48" style="padding:2px 8px">48h</button></p>
+      <div class="legend" id="legend-1x2"></div>
+      <div class="chart-block" id="chart-1x2"></div>
+      <div class="legend" id="legend-ou" style="margin-top:12px"></div>
+      <div class="chart-block" id="chart-ou"></div>
+    </section>
+
+    <section class="panel" aria-label="live alerts">
+      <h2>Live integrity watch</h2>
+      <p class="sub">Single-book variants armed: velocity + result/totals co-move. Signed on detection; verify in your browser.</p>
+      <div id="alerts"><div class="alerts-empty" id="watch-line">Watching the live feed — no anomalies flagged. Quiet is the expected (and good) outcome for a World Cup Final.</div></div>
+    </section>
+  </div>
+
+  <details class="honesty" open>
+    <summary>⚠ What this page is — full disclosure</summary>
+    <div class="honesty-body"><p id="honesty-note">—</p></div>
+  </details>
+
+  <footer class="colophon">
+    Machine feed: <a href="/api/live-state">/api/live-state</a> — recorded-fixture demo with the full multi-book rule set: <a href="/">fairwhistle.vercel.app</a>
+  </footer>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+<script src="/live.js"></script>
+</body>
+</html>
