@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FairWhistle — agent &amp; API docs</title>
+<meta name="description" content="How to use FairWhistle's read API and MCP tools: for humans and for trading agents." />
+<link rel="stylesheet" href="/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>" />
+<style>
+  main { max-width: 860px; margin: 0 auto; padding: 4px 20px 60px; }
+  main h2 { font-size: 15px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-3); margin: 26px 0 8px; }
+  main h2:first-child { margin-top: 6px; }
+  main p { color: var(--ink-2); font-size: 13.5px; line-height: 1.6; }
+  main code { font-family: var(--mono); font-size: 12px; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; color: var(--ink); }
+  main pre { background: var(--surface); border: 1px solid var(--ring); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font-size: 12px; line-height: 1.55; color: var(--ink-2); }
+  main pre code { background: none; padding: 0; }
+  main table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 12.5px; }
+  main th, main td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--grid); color: var(--ink-2); vertical-align: top; }
+  main th { color: var(--ink-3); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.04em; }
+  main td code { white-space: nowrap; }
+  .callout {
+    border: 1px solid var(--warning); border-radius: 10px; background: var(--surface);
+    padding: 12px 16px; margin: 14px 0 20px; font-size: 13px; color: var(--ink-2);
+  }
+  .callout a { color: var(--warning); font-weight: 600; }
+  .back { color: var(--ink-3); font-size: 12.5px; text-decoration: none; }
+  .back:hover { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1><span class="whistle">Fair</span>Whistle</h1>
+      <span class="tag">agent &amp; API docs</span>
+    </div>
+    <div class="badges"><a class="back" href="/">← back to the live dashboard</a></div>
+  </header>
+
+  <main>
+    <div class="callout">
+      Landing here as an agent? Start with <a href="/llms.txt">/llms.txt</a> — a
+      plain-text index of everything on this page, sized for a model's context window.
+    </div>
+
+    <h2>What FairWhistle is</h2>
+    <p>
+      FairWhistle is a match-integrity surveillance agent. It watches odds
+      microstructure across four books (1X2 + totals 2.5) for patterns
+      consistent with match fixing or informed money, using three
+      transparent, causal detectors — abnormal repricing <strong>velocity</strong>,
+      <strong>cross-market coordination</strong>, and <strong>stale-then-snap</strong>
+      board freezes (see the rule cards on the <a href="/">live dashboard</a>
+      for exact thresholds). Every detection is published as a timestamped,
+      SHA-256-fingerprinted, <strong>Ed25519-signed</strong> alert — evidence-grade,
+      not a black box.
+    </p>
+    <p>
+      It runs against two sources: a <strong>replay</strong> fixture — a committed,
+      seeded, deterministic synthetic tape with 3 openly-labeled planted
+      anomalies, replayed on a 10-minute loop, always available — and
+      <strong>live</strong> — the real FIFA World Cup Final via TxLINE mainnet
+      consensus odds (free tier, ~60s batch delay). FairWhistle prices no
+      trades and makes no execution claims; it answers one question:
+      <em>is there a reason to distrust the current price on this market?</em>
+      Frame it as a trading agent's risk desk — check it before you trade,
+      not as a strategy in itself.
+    </p>
+
+    <h2>Read endpoints (raw HTTP)</h2>
+    <p>All are public, CORS-open, no auth. Base URL: <code>https://fairwhistle.vercel.app</code></p>
+    <table>
+      <tr><th>Endpoint</th><th>What</th></tr>
+      <tr><td><code>GET /api/alerts</code></td><td>Attested replay-fixture alerts: hashed, Ed25519-signed, current cycle.</td></tr>
+      <tr><td><code>GET /api/live-state?sinceTs=</code></td><td>Live TxLINE surveillance state: odds points, feed events, live alerts. Returns 503 with an honest note if the deployment has no <code>TXLINE_API_TOKEN</code> configured — expected, not a bug.</td></tr>
+      <tr><td><code>GET /api/meta</code></td><td>Agent identity (Ed25519 pubkey), fixture id, detector rule parameters.</td></tr>
+      <tr><td><code>POST /api/verify</code></td><td>Server-side signature verification. Body: <code>{instance, signature, publicKey}</code>. Also <code>GET /api/verify?id=&lt;alertId&gt;</code> for a replay-cycle alert looked up by id.</td></tr>
+      <tr><td><code>GET /api/feed</code></td><td><code>text/event-stream</code> SSE push of alerts as they're detected. Long-lived; not wrapped as an MCP tool (a poor fit for request/response) — use <code>/api/alerts</code> for a snapshot, or subscribe directly for the live stream.</td></tr>
+    </table>
+    <pre><code>curl "https://fairwhistle.vercel.app/api/alerts"
+curl "https://fairwhistle.vercel.app/api/live-state"
+curl "https://fairwhistle.vercel.app/api/meta"
+curl -X POST "https://fairwhistle.vercel.app/api/verify" \
+  -H 'content-type: application/json' \
+  -d '{"instance": {...}, "signature": "...", "publicKey": "..."}'
+curl -N "https://fairwhistle.vercel.app/api/feed"</code></pre>
+
+    <h2>MCP tools</h2>
+    <p>
+      FairWhistle ships a thin stdio MCP server (<code>mcp/server.mjs</code> in
+      the repo, using the official <code>@modelcontextprotocol/sdk</code>) that
+      wraps the read endpoints above — no detection or attestation logic of
+      its own, just fetch + a light, honest reshape:
+    </p>
+    <table>
+      <tr><th>Tool</th><th>Wraps</th><th>What</th></tr>
+      <tr><td><code>list_active_alerts({ source, severity?, includeEvidence? })</code></td><td><code>/api/alerts</code> or <code>/api/live-state</code></td><td>Full current alert set for a sweep.</td></tr>
+      <tr><td><code>get_market_status({ source })</code></td><td><code>/api/state</code> or <code>/api/live-state</code></td><td>Replay cycle/minute/score, or live feed/kickoff/game state.</td></tr>
+      <tr><td><code>check_market_integrity({ market, source })</code></td><td>same as above, filtered</td><td>The pre-trade check: <code>clean</code> or <code>flagged</code> for one outcome.</td></tr>
+      <tr><td><code>verify_alert_signature({ source, alertId?, instance?, signature? })</code></td><td><code>/api/verify</code></td><td>Confirms an alert's Ed25519 signature.</td></tr>
+    </table>
+    <pre><code>check_market_integrity({ market: "a", source: "replay" })
+-&gt;
+{
+  "verdict": "flagged",
+  "matchingAlertCount": 1,
+  "alerts": [{ "core": { "rule": "velocity",
+    "narrative": "Cirrus Sports repriced 1X2 · Away far faster than baseline volatility explains..." } }]
+}</code></pre>
+    <p>
+      <code>source</code> is <code>replay</code> (default, a labeled synthetic
+      fixture) or <code>live</code> (the real TxLINE feed, ~60s upstream delay,
+      may be unconfigured on a given deployment — an honest
+      <code>available: false</code> there, not a bug). Every tool description
+      states these caveats in-band; none oversell "real-time" or guaranteed
+      accuracy.
+    </p>
+
+    <h2>Installing the MCP server / Claude Code plugin</h2>
+    <pre><code>git clone https://github.com/chaintail/fairwhistle
+cd fairwhistle
+pnpm install                # pulls in @modelcontextprotocol/sdk + zod
+node mcp/server.mjs         # stdio MCP server; talks to fairwhistle.vercel.app</code></pre>
+    <p>
+      The repo is also a Claude Code plugin: <code>.claude-plugin/plugin.json</code>
+      + <code>.mcp.json</code> wire the <code>fairwhistle</code> MCP server to
+      <code>node ${CLAUDE_PLUGIN_ROOT}/mcp/server.mjs</code>, and
+      <code>skills/fairwhistle-integrity/SKILL.md</code> documents tool usage,
+      when to reach for it as a pre-trade check, honest caveats, and a
+      described (prose-only, not implemented) pattern for polling live
+      surveillance during a trade window.
+    </p>
+    <p>
+      Codex works with the same stdio server via its <code>mcp_servers</code>
+      config (<code>~/.codex/config.toml</code>):
+    </p>
+    <pre><code>[mcp_servers.fairwhistle]
+command = "node"
+args = ["/absolute/path/to/fairwhistle/mcp/server.mjs"]
+
+[mcp_servers.fairwhistle.env]
+FAIRWHISTLE_BASE_URL = "https://fairwhistle.vercel.app"</code></pre>
+
+    <h2>Links</h2>
+    <p>
+      Repo: <a href="https://github.com/chaintail/fairwhistle">github.com/chaintail/fairwhistle</a><br />
+      Live dashboard: <a href="/">fairwhistle.vercel.app</a><br />
+      Live surveillance view: <a href="/live.html">/live.html</a><br />
+      Agent index: <a href="/llms.txt">/llms.txt</a><br />
+      Skill: <a href="https://github.com/chaintail/fairwhistle/blob/main/skills/fairwhistle-integrity/SKILL.md">skills/fairwhistle-integrity/SKILL.md</a>
+    </p>
+  </main>
+</div>
+</body>
+</html>

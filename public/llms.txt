@@ -1,0 +1,104 @@
+# FairWhistle
+
+> Match-integrity surveillance agent for the TxODDS World Cup hackathon.
+> FairWhistle watches odds microstructure across four books (1X2 + totals
+> 2.5) for patterns consistent with match fixing or informed money, and
+> publishes every detection as a timestamped, SHA-256-fingerprinted,
+> Ed25519-signed alert. It is a trading agent's risk desk — a pre-trade/
+> in-trade integrity check — not a betting or execution product; it makes
+> no trade recommendations and no real-money claims.
+
+Two sources, always labeled honestly in every response:
+
+- `replay` (default): a committed, seeded, deterministic **synthetic**
+  fixture with 3 openly-labeled planted anomalies, replayed on a 10-minute
+  wall-clock loop. Always available.
+- `live`: the real FIFA World Cup Final via TxLINE **mainnet** consensus
+  odds (free tier: single consensus bookmaker, ~60s batch delay —
+  informative, not execution-grade latency). May be unconfigured on a given
+  deployment, in which case read endpoints return HTTP 503 — expected and
+  honest, not a bug.
+
+Full docs: https://fairwhistle.vercel.app/docs.html and
+https://github.com/chaintail/fairwhistle (see README.md). License: MIT.
+
+## Read endpoints (raw HTTP)
+
+All are public, CORS-open, no auth. Base URL: https://fairwhistle.vercel.app
+
+- `GET /api/alerts` — attested replay-fixture alerts: hashed, Ed25519-signed,
+  current cycle.
+
+  ```
+  curl "https://fairwhistle.vercel.app/api/alerts"
+  ```
+
+- `GET /api/live-state?sinceTs=<ms>` — live TxLINE surveillance state: odds
+  points, feed events, live alerts. Returns 503 with an honest note if
+  `TXLINE_API_TOKEN` isn't configured on this deployment.
+
+  ```
+  curl "https://fairwhistle.vercel.app/api/live-state"
+  ```
+
+- `GET /api/meta` — agent identity (Ed25519 pubkey), fixture id, detector
+  rule parameters.
+
+  ```
+  curl "https://fairwhistle.vercel.app/api/meta"
+  ```
+
+- `POST /api/verify` — verify an alert's signature server-side. Body:
+  `{instance, signature, publicKey}`. Also `GET /api/verify?id=<alertId>`
+  for a replay-cycle alert looked up by id.
+
+- `GET /api/feed` — `text/event-stream` SSE push of alerts as detected.
+  Long-lived, read-only; not wrapped as an MCP tool (a poor request/response
+  fit) — use `/api/alerts` for a snapshot or subscribe directly for the
+  live stream.
+
+  ```
+  curl -N "https://fairwhistle.vercel.app/api/feed"
+  ```
+
+## MCP tools
+
+FairWhistle ships a thin stdio MCP server (`mcp/server.mjs` in the repo,
+using the official `@modelcontextprotocol/sdk`) that wraps the read
+endpoints above — no detection or attestation logic of its own:
+
+- `list_active_alerts({ source, severity?, includeEvidence? })` — wraps
+  `/api/alerts` or `/api/live-state`. Full current alert sweep.
+- `get_market_status({ source })` — wraps `/api/state` or `/api/live-state`.
+  Replay cycle/minute/score, or live feed/kickoff/game state.
+- `check_market_integrity({ market, source })` — the pre-trade check:
+  `clean` or `flagged` (with evidence) for one outcome (`h`/`d`/`a`/`o`/`u`).
+- `verify_alert_signature({ source, alertId?, instance?, signature? })` —
+  wraps `/api/verify`; confirms an alert's Ed25519 signature.
+
+`source` is `replay` (default) or `live`. Every tool description states the
+replay/live honesty notes above in-band.
+
+## Plugin install
+
+```
+git clone https://github.com/chaintail/fairwhistle
+cd fairwhistle && pnpm install
+node mcp/server.mjs
+```
+
+The repo doubles as a Claude Code plugin: `.claude-plugin/plugin.json` +
+`.mcp.json` wire the `fairwhistle` MCP server to
+`node ${CLAUDE_PLUGIN_ROOT}/mcp/server.mjs`, and
+[skills/fairwhistle-integrity/SKILL.md](https://github.com/chaintail/fairwhistle/blob/main/skills/fairwhistle-integrity/SKILL.md)
+documents tool usage, when to reach for it, and a described (prose-only)
+live-surveillance polling pattern. Codex config snippet in
+[docs.html](https://fairwhistle.vercel.app/docs.html) / README.md.
+
+## Links
+
+- Docs page: https://fairwhistle.vercel.app/docs.html
+- Live dashboard: https://fairwhistle.vercel.app/
+- Live surveillance view: https://fairwhistle.vercel.app/live.html
+- Repo: https://github.com/chaintail/fairwhistle
+- Skill: https://github.com/chaintail/fairwhistle/blob/main/skills/fairwhistle-integrity/SKILL.md
